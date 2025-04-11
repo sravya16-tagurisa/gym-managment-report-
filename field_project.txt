@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-image: url("https://images.pexels.com/photos/1229356/pexels-photo-1229356.jpeg?cs=srgb&dl=abs-adult-athlete-1229356.jpg&fm=jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        #loginContainer, #contentContainer {
+            width: 80%;
+            max-width: 800px;
+            padding: 20px;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+
+        #loginContainer {
+            background-color: rgba(0, 0, 0, 0.7);
+            text-align: center;
+        }
+
+        #contentContainer {
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none;
+            text-align: center;
+        }
+
+        input, select, button {
+            margin: 5px; /* Reduced margin */
+            padding: 8px 10px; /* Reduced padding */
+            border: none;
+            border-radius: 5px;
+            font-size: 14px; /* Reduced font size */
+            width: 150px; /* Reduced width */
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #output {
+            border: 2px solid #ccc;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .title {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .section {
+            margin-bottom: 10px; /* Reduced margin */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loginContainer">
+        <h2 class="title">Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Enter</button>
+        <p id="loginMessage" style="color: red;"></p>
+    </div>
+
+    <div id="contentContainer">
+        <h2 class="title">Gym Management System</h2>
+
+        <div class="section">
+            <input type="text" id="memberId" placeholder="Member ID">
+            <input type="text" id="memberName" placeholder="Member Name">
+            <select id="membershipType">
+                <option value="" disabled selected>Select Membership Type</option>
+                <option value="Basic">Basic</option>
+                <option value="Premium">Premium</option>
+                <option value="VIP">VIP</option>
+            </select>
+            <button onclick="addMember()">Add Member</button>
+        </div>
+
+        <div class="section">
+            <select id="className">
+                <option value="" disabled selected>Select Class</option>
+                <option value="Yoga">Yoga</option>
+                <option value="Zumba">Zumba</option>
+                <option value="Cardio">Cardio</option>
+                <option value="Strength Training">Strength Training</option>
+            </select>
+            <button onclick="registerClass()">Register Class</button>
+        </div>
+
+        <div class="section">
+            <input type="text" id="memberIdAction" placeholder="Member ID">
+            <select id="classNameAction">
+                <option value="" disabled selected>Select Class</option>
+                <option value="Yoga">Yoga</option>
+                <option value="Zumba">Zumba</option>
+                <option value="Cardio">Cardio</option>
+                <option value="Strength Training">Strength Training</option>
+            </select>
+            <button onclick="checkIn()">Check In</button>
+            <button onclick="checkOut()">Check Out</button>
+        </div>
+
+        <button onclick="showTopMembers()">Show Top Members</button>
+
+        <h3>Output:</h3>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        let members = {};
+        let checkInTimes = {};
+
+        function login() {
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+
+            document.getElementById("loginContainer").style.display = "none";
+            document.getElementById("contentContainer").style.display = "block";
+        }
+
+        // Rest of your gym management functions (addMember, registerClass, etc.)
+        function addMember() {
+            let id = document.getElementById("memberId").value;
+            let name = document.getElementById("memberName").value;
+            let type = document.getElementById("membershipType").value;
+            
+            if (id && name && type) {
+                members[id] = { name, type, totalTime: 0 };
+                log(`Added member: ${name} (${type})`);
+            } else {
+                log('Please enter all details and select a membership type.');
+            }
+        }
+
+        function registerClass() {
+            let className = document.getElementById("className").value;
+            if (className) {
+                log(`Registered class: ${className}`);
+            } else {
+                log('Please select a class to register.');
+            }
+        }
+
+        function checkIn() {
+            let id = document.getElementById("memberIdAction").value;
+            let className = document.getElementById("classNameAction").value;
+            if (id in members && className) {
+                checkInTimes[id] = Date.now();
+                log(`Member ${id} checked into ${className}.`);
+            } else {
+                log('Invalid Member ID or Class Name.');
+            }
+        }
+
+        function checkOut() {
+            let id = document.getElementById("memberIdAction").value;
+            if (id in members && id in checkInTimes) {
+                let timeSpent = Math.floor((Date.now() - checkInTimes[id]) / 60000);
+                members[id].totalTime += timeSpent;
+                delete checkInTimes[id];
+                log(`Member ${id} checked out. Time spent: ${timeSpent} min.`);
+            } else {
+                log('Invalid check-out attempt.');
+            }
+        }
+
+        function showTopMembers() {
+            let sortedMembers = Object.values(members).sort((a, b) => b.totalTime - a.totalTime);
+            log('Top Members by Time Spent:');
+            sortedMembers.slice(0, 3).forEach(m => log(`${m.name} (${m.type}) - Time Spent: ${m.totalTime} min`));
+        }
+
+        function log(message) {
+            document.getElementById("output").innerHTML += message + "<br>";
+        }
+    </script>
+</body>
+</html>
